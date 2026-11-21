@@ -5,7 +5,7 @@ local SUPCA       = vars.SUP .. vars.CA
 local TAPP        = vars.terminal .. " -e "
 
 hl.bind(vars.SUP .. "T",            hl.dsp.exec_cmd(vars.terminal))
-hl.bind(vars.SUP .. "RETURN",       hl.dsp.exec_cmd(vars.terminal))
+hl.bind(vars.SUP .. "RETURN",       hl.dsp.exec_cmd(vars.launcher))
 hl.bind(SUPSM    .. "TAB",          hl.dsp.exec_cmd(TAPP .. vars.taskmanager))
 hl.bind(vars.SUP .. "Z",            hl.dsp.exec_cmd(vars.browser))
 hl.bind(vars.SUP .. "C",            hl.dsp.exec_cmd(vars.editor))
@@ -45,10 +45,44 @@ hl.bind(vars.SUP .. "right",        hl.dsp.focus({ direction = "right" }))
 hl.bind(vars.SUP .. "up",           hl.dsp.focus({ direction = "up" }))
 hl.bind(vars.SUP .. "down",         hl.dsp.focus({ direction = "down" }))
 
+-- Switch both monitors together
 for i = 1, 10 do
     local key = i % 10
-    hl.bind(vars.SUP .. key,        hl.dsp.focus({ workspace = i}))
-    hl.bind(SUPSM    .. key,        hl.dsp.window.move({ workspace = i }))
+    local ws = i
+
+    -- Switch both monitors
+    hl.bind(vars.SUP .. key, function()
+        hl.dispatch(hl.dsp.focus({
+            workspace = ws
+        }))
+
+        hl.dispatch(hl.dsp.focus({
+            workspace = ws + 10
+        }))
+
+        hl.dispatch(hl.dsp.focus({
+            monitor = "HDMI-A-1"
+        }))
+    end)
+
+    -- Move window based on mouse monitor
+    hl.bind(SUPSM .. key, function()
+        local monitor = hl.get_monitor_at_cursor()
+
+        if monitor == nil then
+            return
+        end
+
+        local target = ws
+
+        if monitor.name == "DP-3" then
+            target = ws + 10
+        end
+
+        hl.dispatch(hl.dsp.window.move({
+            workspace = target
+        }))
+    end)
 end
 
 hl.bind(vars.SUP .. "D",            utils.toggle_app("communicate", vars.discord))
